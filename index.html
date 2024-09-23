@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savings Calculator with Compound Interest</title>
+    <link rel="icon" type="image/x-icon" href="icon.ico">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        input,
+        select,
+        textarea {
+            font-size: 16px;
+        }
+
+        body {
+            margin: 20px;
+        }
+
+        body,
+        button {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tabs button {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: none;
+            width: 48%;
+            font-size: 16px;
+        }
+
+        .tabs button.active {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button.calculate {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        button.calculate:hover {
+            background-color: #218838;
+        }
+
+        .result-table {
+            margin-top: 20px;
+            font-size: 1.2em;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .preset-group {
+            margin: 20px 0;
+            display: flex;
+            justify-content: end;
+        }
+
+        .preset-group button {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: #ccc;
+        }
+
+        .preset-group button.active {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #over_years {
+            font-size: 32px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Savings Calculator with Compound Interest</h1>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="active" onclick="switchTab('age-tab')">Calculate by Age</button>
+            <button onclick="switchTab('years-tab')">Calculate by Years</button>
+        </div>
+
+        <!-- Preset Buttons -->
+        <div class="preset-group">
+            <button class="active" onclick="applyPreset('Aof')">Aof (Default)</button>
+            <button onclick="applyPreset('Custom')">Custom</button>
+        </div>
+
+        <!-- Age Tab Content -->
+        <div id="age-tab" class="tab-content active">
+            <div class="input-group">
+                <label for="monthlySavingsAge">Amount Saved Each Month:</label>
+                <input type="text" id="monthlySavingsAge" placeholder="Enter monthly savings"
+                    oninput="formatNumberInput(this)">
+            </div>
+            <div class="input-group">
+                <label for="yearlyInterestAge">Yearly Interest (%):</label>
+                <input type="number" id="yearlyInterestAge" placeholder="Enter yearly interest">
+            </div>
+            <div class="input-group">
+                <label for="currentAge">Current Age:</label>
+                <input type="number" id="currentAge">
+            </div>
+            <div class="input-group">
+                <label for="retirementAge">Retirement Age:</label>
+                <input type="number" id="retirementAge">
+            </div>
+            <button class="calculate" onclick="calculateSavingsByAge()">Calculate</button>
+        </div>
+
+        <!-- Years Tab Content -->
+        <div id="years-tab" class="tab-content">
+            <div class="input-group">
+                <label for="monthlySavingsYears">Amount Saved Each Month:</label>
+                <input type="text" id="monthlySavingsYears" placeholder="Enter monthly savings"
+                    oninput="formatNumberInput(this)">
+            </div>
+            <div class="input-group">
+                <label for="yearlyInterestYears">Yearly Interest (%):</label>
+                <input type="number" id="yearlyInterestYears" placeholder="Enter yearly interest">
+            </div>
+            <div class="input-group">
+                <label for="numYears">Number of Years:</label>
+                <input type="number" id="numYears" placeholder="Enter number of years">
+            </div>
+            <button class="calculate" onclick="calculateSavings()">Calculate</button>
+        </div>
+
+        <!-- Result Table -->
+        <div id="over_years"></div>
+        <table class="result-table" id="resultTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Total Savings without Interest</th>
+                    <th>Total Savings with Interest</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="withoutInterest"></td>
+                    <td id="withInterest"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        applyPreset("Aof");
+        calculateSavingsByAge();
+        // Switch between tabs
+        function switchTab(tabId) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tabs button');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(button => button.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tabs button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        }
+
+        // Format number input with commas
+        function formatNumberInput(input) {
+            let value = input.value.replace(/,/g, '');
+            input.value = Number(value).toLocaleString();
+        }
+
+        // Apply preset values for "Aof" or "Custom"
+        function applyPreset(preset) {
+            if (preset === 'Aof') {
+                document.getElementById('monthlySavingsAge').value = '10,000';
+                document.getElementById('yearlyInterestAge').value = 7;
+                document.getElementById('currentAge').value = 30;
+                document.getElementById('retirementAge').value = 60;
+
+                document.getElementById('monthlySavingsYears').value = '10,000';
+                document.getElementById('yearlyInterestYears').value = 7;
+                document.getElementById('numYears').value = 30;
+            } else if (preset === 'Custom') {
+                document.getElementById('monthlySavingsAge').value = '5,000';
+                document.getElementById('yearlyInterestAge').value = 0;
+                document.getElementById('currentAge').value = 30;
+                document.getElementById('retirementAge').value = 60;
+
+                document.getElementById('monthlySavingsYears').value = '5,000';
+                document.getElementById('yearlyInterestYears').value = 0;
+                document.getElementById('numYears').value = 30;
+            }
+
+            // Update preset button appearance
+            const buttons = document.querySelectorAll('.preset-group button');
+            buttons.forEach(button => button.classList.remove('active'));
+            document.querySelector(`.preset-group button[onclick="applyPreset('${preset}')"]`).classList.add('active');
+        }
+
+        // Calculate savings by number of years
+        function calculateSavings() {
+            const monthlySavings = parseFloat(document.getElementById('monthlySavingsYears').value.replace(/,/g, ''));
+            const yearlyInterest = parseFloat(document.getElementById('yearlyInterestYears').value);
+            const numYears = parseFloat(document.getElementById('numYears').value);
+
+            if (isNaN(monthlySavings) || isNaN(yearlyInterest) || isNaN(numYears)) {
+                alert("Please enter valid inputs.");
+                return;
+            }
+
+            let totalSavingsWithoutInterest = monthlySavings * 12 * numYears;
+            let totalSavingsWithInterest = 0;
+            let totalSavingsPerYear = monthlySavings * 12;
+
+            for (let year = 1; year <= numYears; year++) {
+                totalSavingsWithInterest += totalSavingsPerYear;
+                totalSavingsWithInterest += totalSavingsWithInterest * (yearlyInterest / 100);
+            }
+
+            displayResults(totalSavingsWithoutInterest, totalSavingsWithInterest, numYears);
+        }
+
+        // Calculate savings by age (current age and retirement age)
+        function calculateSavingsByAge() {
+            const monthlySavings = parseFloat(document.getElementById('monthlySavingsAge').value.replace(/,/g, ''));
+            const yearlyInterest = parseFloat(document.getElementById('yearlyInterestAge').value);
+            const currentAge = parseFloat(document.getElementById('currentAge').value);
+            const retirementAge = parseFloat(document.getElementById('retirementAge').value);
+
+            if (isNaN(monthlySavings) || isNaN(yearlyInterest) || isNaN(currentAge) || isNaN(retirementAge)) {
+                alert("Please enter valid inputs.");
+                return;
+            }
+
+            const numYears = retirementAge - currentAge;
+            if (numYears <= 0) {
+                alert("Retirement age must be greater than current age.");
+                return;
+            }
+
+            let totalSavingsWithoutInterest = monthlySavings * 12 * numYears;
+            let totalSavingsWithInterest = 0;
+            let totalSavingsPerYear = monthlySavings * 12;
+
+            for (let year = 1; year <= numYears; year++) {
+                totalSavingsWithInterest += totalSavingsPerYear;
+                totalSavingsWithInterest += totalSavingsWithInterest * (yearlyInterest / 100);
+            }
+
+            displayResults(totalSavingsWithoutInterest, totalSavingsWithInterest, numYears);
+        }
+
+        // Display results in the table with ฿ and number of years included
+        function displayResults(totalWithoutInterest, totalWithInterest, numYears) {
+            over_years.innerText = `over ${numYears} year(s)`;
+            document.getElementById('withoutInterest').innerText = `฿${totalWithoutInterest.toLocaleString()}`;
+            document.getElementById('withInterest').innerText = `฿${totalWithInterest.toLocaleString()}`;
+            document.getElementById('resultTable').style.display = 'table';
+        }
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(function () {
+                console.log('Service Worker Registered');
+            });
+        }
+    </script>
+
+
+</body>
+
+</html>
