@@ -5,6 +5,7 @@ self.addEventListener('install', function(event) {
           './index.html',
           './icon.ico',
           './manifest.json',
+          // TODO: Add font here
           // Add any other assets you want to cache
         ]);
       })
