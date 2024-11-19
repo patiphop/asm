@@ -12,3 +12,4 @@ By default, the calculator is set with the following values in the **Aof (Defaul
 
 These default values reflect a practical, moderate approach to saving for retirement, assuming a relatively steady income and investment growth over time. For those who want to personalize their plan, the **Custom** mode offers flexibility by allowing adjustments to the monthly savings amount, interest rate, and other variables, giving a more tailored projection of retirement savings.
 
+DEMO: https://patiphop.github.io/asm/
